@@ -1,2 +1,7 @@
 requests
-dotenv
+python-dotenv
+streamlit
+pandas
+numpy
+scikit-learn
+# sqlite3 já incluso no Python padrão
