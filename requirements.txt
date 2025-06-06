@@ -4,4 +4,5 @@ streamlit
 pandas
 numpy
 scikit-learn
+shapely
 # sqlite3 já incluso no Python padrão

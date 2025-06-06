@@ -3,34 +3,48 @@ import sqlite3
 import os
 import dotenv
 from datetime import datetime
+from shapely.geometry import shape
 
 dotenv.load_dotenv()
 
 DB_PATH = os.getenv("DB_PATH", "data/oil_drift.db")
-RAW_PATH = "data/raw/oil_slicks.json"
 
-# Exemplo de função para buscar dados da API Cerulean (ajuste a URL e params conforme necessário)
+CERULEAN_URL = (
+    "https://api.cerulean.skytruth.org/collections/public.slick_plus/items"
+    "?limit=9"
+    "&bbox=-75,-35,-25,10"
+    "&sortby=slick_timestamp"
+)
+
 def fetch_oil_slicks():
-    # url = "https://api.cerulean.skytruth.org/oil_slicks"  # Exemplo
-    # resp = requests.get(url)
-    # resp.raise_for_status()
-    # data = resp.json()
-    # Para teste, use um exemplo mock:
-    data = [{
-        "id": "slick_001",
-        "timestamp": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
-        "lat": -18.161066,
-        "lng": -37.919682,
-        "area": 1.2,
-        "confidence": 0.95
-    }]
-    return data
+    resp = requests.get(CERULEAN_URL)
+    resp.raise_for_status()
+    data = resp.json()
+    slicks = []
+    for feature in data.get("features", []):
+        props = feature["properties"]
+        geom = feature["geometry"]
+        # Calcular centroide do polígono
+        try:
+            centroid = shape(geom).centroid
+            lat, lng = centroid.y, centroid.x
+        except Exception:
+            lat, lng = None, None
+        slick = {
+            "id": props["id"],
+            "timestamp": props["slick_timestamp"],
+            "lat": lat,
+            "lng": lng,
+            "area": props.get("area"),
+            "confidence": props.get("machine_confidence"),
+        }
+        slicks.append(slick)
+    return slicks
 
-def save_raw(data):
-    os.makedirs(os.path.dirname(RAW_PATH), exist_ok=True)
-    import json
-    with open(RAW_PATH, "w") as f:
-        json.dump(data, f, indent=2)
+def clear_oil_slicks(conn):
+    cur = conn.cursor()
+    cur.execute("DELETE FROM oil_slicks")
+    conn.commit()
 
 def insert_oil_slick(conn, slick):
     cur = conn.cursor()
@@ -41,13 +55,13 @@ def insert_oil_slick(conn, slick):
     conn.commit()
 
 def main():
-    data = fetch_oil_slicks()
-    save_raw(data)
     conn = sqlite3.connect(DB_PATH)
+    clear_oil_slicks(conn)
+    data = fetch_oil_slicks()
     for slick in data:
         insert_oil_slick(conn, slick)
     conn.close()
-    print(f"{len(data)} manchas de óleo inseridas e salvas em {RAW_PATH}")
+    print(f"{len(data)} manchas de óleo inseridas no banco de dados.")
 
 if __name__ == "__main__":
     main()
