@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS oil_slicks;
 
-CREATE TABLE oil_slicks (
+
+CREATE TABLE IF NOT EXISTS oil_slicks (
     id TEXT PRIMARY KEY,
     timestamp TEXT,
     lat REAL,
@@ -9,9 +9,8 @@ CREATE TABLE oil_slicks (
     confidence REAL
 );
 
-DROP TABLE IF EXISTS weather_data;
 
-CREATE TABLE weather_data (
+CREATE TABLE IF NOT EXISTS weather_data (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     oil_slick_id TEXT,
     timestamp TEXT,
@@ -22,4 +21,11 @@ CREATE TABLE weather_data (
     wave_height REAL,
     water_temp REAL,
     FOREIGN KEY(oil_slick_id) REFERENCES oil_slicks(id)
+);
+
+CREATE TABLE IF NOT EXISTS sensor_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    temperatura REAL,
+    umidade REAL
 );

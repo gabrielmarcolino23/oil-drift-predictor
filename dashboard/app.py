@@ -20,6 +20,12 @@ def load_data(db_path="data/oil_drift.db"):
     conn.close()
     return df
 
+def load_sensor_data(db_path="data/oil_drift.db"):
+    conn = sqlite3.connect(db_path)
+    df = pd.read_sql_query("SELECT * FROM sensor_data ORDER BY timestamp DESC LIMIT 20", conn)
+    conn.close()
+    return df
+
 def main():
     st.title("Oil Drift Predictor Dashboard")
     df = load_data()
@@ -101,6 +107,10 @@ def main():
     )
     st.plotly_chart(fig, use_container_width=True)
     st.write("Legenda: Azul = posição atual, demais cores = previsão para +2h, +4h, +6h, +8h. Linha tracejada = trajetória prevista.")
+
+    st.subheader("Leituras do Sensor (Simulado)")
+    sensor_df = load_sensor_data()
+    st.dataframe(sensor_df)
 
 if __name__ == "__main__":
     main()
