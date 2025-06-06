@@ -3,7 +3,7 @@
 Sistema de monitoramento inteligente que coleta dados de manchas de óleo via satélite e prevê sua dispersão com base em condições climáticas em tempo real.
 
 ## Componentes
-- 📡 Ingestão de dados via API Cerulean e OpenWeatherMap
+- 📡 Ingestão de dados via API Cerulean e API StormGlass
 - 🧠 Modelo de IA para previsão de deslocamento
 - 🗺️ Dashboard com mapa interativo
 - 🧰 Integração com ESP32 (simulado) para alertas físicos e envio de dados de sensor
@@ -15,23 +15,32 @@ Sistema de monitoramento inteligente que coleta dados de manchas de óleo via sa
    pip install -r requirements.txt
    ```
 
-2. **Inicialize o banco de dados:**
+2. **Inicialize o banco de dados (opcional, só se for criar do zero):**
    ```bash
    python main.py
    ```
+   > **Atenção:** Rodar o main.py pode sobrescrever dados se o seu init.sql tiver comandos DROP TABLE. Use apenas se for iniciar do zero.
 
-3. **Inicie a API FastAPI para receber dados do sensor:**
+3. **Crie a tabela de sensores (sem afetar os dados existentes):**
+   ```bash
+   python create_sensor_table.py
+   ```
+   Isso garante que a tabela sensor_data existe no banco, sem apagar nada.
+
+4. **Inicie a API FastAPI para receber dados do sensor:**
    ```bash
    uvicorn utils.sensor_api:app --reload --port 8000
    ```
+   > Deixe esse terminal aberto enquanto simula o sensor.
 
-4. **Simule o envio de dados do sensor (sem hardware):**
+5. **Simule o envio de dados do sensor (sem hardware):**
    ```bash
    python simulate_sensor.py
    ```
    Isso irá enviar dados de temperatura e umidade simulados para o backend a cada 10 segundos.
+   > Se aparecer erro de conexão, verifique se a API FastAPI está rodando antes de executar o simulador.
 
-5. **Abra o dashboard para visualizar os dados:**
+6. **Abra o dashboard para visualizar os dados:**
    ```bash
    streamlit run dashboard/app.py
    ```
@@ -60,8 +69,6 @@ Se quiser usar um sensor físico real, basta substituir o script de simulação 
 Isso irá criar o banco, inserir um exemplo de mancha de óleo e buscar o clima correspondente, salvando tudo no SQLite.
 
 ---
-
-Consulte o README original para detalhes do fluxo completo e estrutura de pastas.
 
 ## Como rodar
 
