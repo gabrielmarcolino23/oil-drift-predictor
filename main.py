@@ -31,7 +31,7 @@ def ingest_oil_slick(oil_slick_id, timestamp, lat, lng, area, confidence):
 def ingest_weather(oil_slick_id, lat, lng, timestamp):
     # Chama o script de clima
     subprocess.run([
-        "python", "ingest/fetch_weather.py", str(oil_slick_id), str(lat), str(lng), str(timestamp)
+        "python", "ingest/fetch_weather_for_all.py", str(oil_slick_id), str(lat), str(lng), str(timestamp)
     ], check=True)
 
 def main():
